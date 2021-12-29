@@ -1,7 +1,7 @@
-import hashlib
-import json
-import requests
+import hashlib,json,requests,re
 from requests.structures import CaseInsensitiveDict
+
+
 def get_checksum(score,playTime,url):
 	gameStateData = ""
 	str2hash = f"{score}:{playTime}:{url}:{gameStateData}:crmjbjm3lczhlgnek9uaxz2l9svlfjw14npauhen"
@@ -54,7 +54,6 @@ def game_id(game_url):
 	headers["origin"] = "https://prizes.gamee.com"
 	headers["pragma"] = "no-cache"
 	headers["referer"] = "https://prizes.gamee.com/"
-	# headers["sec-ch-ua"] = "" Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96""
 	headers["sec-ch-ua-mobile"] = "?0"
 	headers["sec-ch-ua-platform"] = "Windows"
 	headers["sec-fetch-dest"] = "empty"
@@ -68,7 +67,6 @@ def game_id(game_url):
 	resp = requests.post(url, headers=headers, data=data)
 
 	result_data = resp.json()
-	# print(result_data)
 	return result_data['result']['game']['id']
 
 def send_score(score,timePlay,checksum,token,game_url,game_id):
@@ -98,19 +96,20 @@ def send_score(score,timePlay,checksum,token,game_url,game_id):
 
 	print(resp.status_code)
 	print(resp.content)
-# https://prizes.gamee.com#tgShareScoreUrl=tgb%3A%2F%2Fshare_game_score%3Fhash%3DgdiggXrZVTXZWAYSoPAe
-# https://prizes.gamee.com/game-bot/rollerdisco-34106e5c0f111a182e5afe0ddede5c39f2be4fa3#tgShareScoreUrl=tgb%3A%2F%2Fshare_game_score%3Fhash%3DhHJUbMEoNfxVRmVmJorD
-game_url = '/game-bot/rollerdisco-34106e5c0f111a182e5afe0ddede5c39f2be4fa3'
+
+def game_link(url):
+	pattern = r"https:\/\/prizes\.gamee\.com(\/game-bot\/.*)#tg"
+	result = re.match(pattern, url)
+	link = result.groups(0)[0]
+	return link
+
+url = "https://prizes.gamee.com/game-bot/rollerdisco-34106e5c0f111a182e5afe0ddede5c39f2be4fa3#tgShareScoreUrl=tgb%3A%2F%2Fshare_game_score%3Fhash%3DhHJUbMEoNfxVRmVmJorD"
+game_url = game_link(url)
+print(game_url)
+exit()
 score = 12104
 time = 1309
 token = get_token(game_url)
 checksum = get_checksum(score, time, game_url)
 game_id = game_id(game_url)
 send_score(score, time, checksum, token, game_url, game_id)
-# https://prizes.gamee.com/game-bot/rollerdisco-34106e5c0f111a182e5afe0ddede5c39f2be4fa3#tgShareScoreUrl=tgb%3A%2F%2Fshare_game_score%3Fhash%3DhHJUbMEoNfxVRmVmJorD
-# print("{'jsonrpc':'2.0",'id':'user.authentication.botLogin','method':'user.authentication.botLogin','params':{'botName':'telegram','botGameUrl':'u','botUserIdentifier':''}}")
-# https://prizes.gamee.com/game-bot/Qru0ALuCQ-453060498ed6e44985181e8627af827634c14461#tgShareScoreUrl=tgb%3A%2F%2Fshare_game_score%3Fhash%3DsbCtzuMYGxRLbkVNWMnk
-# https://prizes.gamee.com/game-bot/u0yXP5o-9356840cdc7752799b666b4aea9358ab5140d03a#tgShareScoreUrl=tgb%3A%2F%2Fshare_game_score%3Fhash%3DnoprfTfzIebnuyxXecEv
-# https://prizes.gamee.com/game-bot/Qru0ALuCQ-453060498ed6e44985181e8627af827634c14461#tgShareScoreUrl=tgb%3A%2F%2Fshare_game_score%3Fhash%3DsbCtzuMYGxRLbkVNWMnk
-# https://prizes.gamee.com/game-bot/rollerdisco-34106e5c0f111a182e5afe0ddede5c39f2be4fa3#tgShareScoreUrl=tgb%3A%2F%2Fshare_game_score%3Fhash%3DhHJUbMEoNfxVRmVmJorD
-# https://prizes.gamee.com/game-bot/u0yXP5o-9356840cdc7752799b666b4aea9358ab5140d03a#tgShareScoreUrl=tgb%3A%2F%2Fshare_game_score%3Fhash%3DnoprfTfzIebnuyxXecEv
