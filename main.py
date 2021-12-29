@@ -40,7 +40,6 @@ def get_token(Gameurl):
 	headers["x-install-uuid"] = "0c1cd354-302a-4e76-9745-6d2d3dcf2c56"
 	headers["sec-ch-ua-mobile"] = "?0"
 	headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
-	# headers["sec-ch-ua"] = "" Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96""
 	headers["sec-ch-ua-platform"] = "Windows"
 	headers["Content-Type"] = "application/json"
 	headers["Accept"] = "*/*"
@@ -52,13 +51,18 @@ def get_token(Gameurl):
 	headers["Accept-Encoding"] = "gzip, deflate, br"
 	headers["Accept-Language"] = "en-US,en;q=0.9"
 	data = '{"jsonrpc":"2.0","id":"user.authentication.botLogin","method":"user.authentication.botLogin","params":{"botName":"telegram","botGameUrl":"'+Gameurl+'","botUserIdentifier":null}}'
-	resp = requests.post(url, headers=headers, data=data)
-	# print(resp.status_code)
-	result_data = resp.json()
-	# print(result_data)
-	token = result_data['result']['tokens']['authenticate']
-	# print(token)
-	return token
+	try :
+		resp = requests.post(url, headers=headers, data=data)
+	except:
+		return False
+
+	print(resp.status_code)
+	if resp.status_code == 200:
+		result_data = resp.json()
+		token = result_data['result']['tokens']['authenticate']
+		return token
+	else:
+		return False
 
 def game_id(game_url):
 
@@ -81,15 +85,18 @@ def game_id(game_url):
 	headers["sec-fetch-mode"] = "cors"
 	headers["sec-fetch-site"] = "cross-site"
 	headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
-
 	data = '{"jsonrpc":"2.0","id":"game.getWebGameplayDetails","method":"game.getWebGameplayDetails","params":{"gameUrl":"'+game_url+'"}}'
 
-
-	resp = requests.post(url, headers=headers, data=data)
-
-	result_data = resp.json()
-	return result_data['result']['game']['id']
-
+	try :
+		resp = requests.post(url, headers=headers, data=data)
+	except:
+		return False
+	if resp.status_code == 200:
+		result_data = resp.json()
+		return result_data['result']['game']['id']
+	else:
+		return False
+	
 
 def send_score(score,timePlay,checksum,token,game_url,game_id):
 	url = "http://api.service.gameeapp.com"
@@ -112,32 +119,46 @@ def send_score(score,timePlay,checksum,token,game_url,game_id):
 	headers["Authorization"] = "Bearer {my_token}".format(my_token=token)
 	data = '{"jsonrpc":"2.0","id":"game.saveWebGameplay","method":"game.saveWebGameplay","params":{"gameplayData":{"gameId":'+str(game_id)+',"score":'+str(score)+',"playTime":'+str(timePlay)+',"gameUrl":"'+game_url+'","metadata":{"gameplayId":30},"releaseNumber":8,"gameStateData":null,"createdTime":"2021-12-28T03:20:24+03:30","checksum":"'+checksum+'","replayVariant":null,"replayData":null,"replayDataChecksum":null,"isSaveState":false,"gameplayOrigin":"game"}}}'
 
+	try:
+		resp = requests.post(url, headers=headers, data=data)
+	except:
+		return False
 
-	resp = requests.post(url, headers=headers, data=data)
+	
+	if resp.status_code == 200:
+		result_text = ""
+		status = 0
+		my_json = resp.json()
+		keys_list = list(my_json)
+		for i in keys_list:
+			if i == "error":
+				result_text = my_json['error']['message']+"\n"+my_json['error']['data']['reason']+"\n"+"try after "+my_json['user']['cheater']['banStatus']
+				status = 1
+				break
 
-	print(resp.status_code)
-	result_text = ""
-	status = 0
-	my_json = resp.json()
-	keys_list = list(my_json)
-	for i in keys_list:
-		if i == "error":
-			result_text = my_json['error']['message']+"\n"+my_json['error']['data']['reason']+"\n"+"try after "+my_json['user']['cheater']['banStatus']
-			status = 1
-			break
-
-	if status == 0:
-		user_posin_rank = my_json['result']['surroundingRankings'][0]['ranking']
-		for user in user_posin_rank:
-			result_text = str(user['rank'])+" - "+ user['user']['firstname']+" "+user['user']['lastname']+" score : "+str(user['score'])+"\n"+result_text
-	return result_text
+		if status == 0:
+			user_posin_rank = my_json['result']['surroundingRankings'][0]['ranking']
+			for user in user_posin_rank:
+				result_text = str(user['rank'])+" - "+ user['user']['firstname']+" "+user['user']['lastname']+" score : "+str(user['score'])+"\n"+result_text
+		return result_text
+	else:
+		return False
 
 
 def game_link(url):
 	pattern = r"https:\/\/prizes\.gamee\.com(\/game-bot\/.*)#tg"
 	result = re.match(pattern, url)
-	link = result.groups(0)[0]
-	return link
+	if result:
+		link = result.groups(0)[0]
+		return link
+	else:
+		return False
+
+def check_is_digit(num):
+    if num.strip().isdigit():
+        return True
+    else:
+        return False
 
 
 while True:
@@ -148,14 +169,25 @@ while True:
 		break
 	elif event == "Submit":
 		window['-run-'].update(visible =True)
-		game_url = game_link(values['-IN1-'])
 		score = values['-IN2-']
 		time = values['-IN3-']
-		token = get_token(game_url)
-		checksum = get_checksum(score, time, game_url)
-		game_id = game_id(game_url)
-		result = send_score(score, time, checksum, token, game_url, game_id)
-		window['-result-'].update(visible =True)
+		
+		if values['-IN1-']=='' or score == '' or time == '':
+			result = "fill empty field !" 
+		else:
+			if not check_is_digit(score) or not check_is_digit(time):
+				result = "score and time fields should be number!"
+			else:
+				game_url = game_link(values['-IN1-'])
+				if game_url ==False:
+					result = "someting went wrong !"+"\n"+"Not valid link"
+				else:
+					token = get_token(game_url)
+					checksum = get_checksum(score, time, game_url)
+					Game_number = game_id(game_url)
+					result = send_score(score, time, checksum, token, game_url, Game_number)
+					if result == False:
+						result = "someting went wrong !"+"\n"+"check your internet"
 		window['-run-'].update(result)
 
 
