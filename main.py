@@ -8,7 +8,7 @@ import PySimpleGUI as sg # pylint: disable=import-error
 
 sg.theme("DarkAmber")
 arr = ["", "", "", ""]
-CREDITS = "produce by norouzy 29/12/2021, updated by difhel 04/11/2023"
+CREDITS = "produce by norouzy 29/12/2021"
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/96.0.4664.110 Safari/537.36"
@@ -125,6 +125,8 @@ def get_token(game_url):
     print(resp.status_code)
     if resp.status_code == 200:
         result_data = resp.json()
+        print("result_data")
+        print(result_data)
         token = result_data["result"]["tokens"]["authenticate"]
         return token
     return False
@@ -256,12 +258,13 @@ def send_score(score, time_play, checksum, token, game_url, game_id_):
 
 
 def game_link(url):
-    pattern = r"https:\/\/prizes\.gamee\.com(\/game-bot\/.*)"
-    result = re.match(pattern, url)
-    if result:
-        link = result.groups(0)[0]
-        return link
-    return False
+    match = re.search(r'game-bot/([\w-]+)', url)
+    if match:
+        game_code = match.group(1)
+        print("/game-bot/" + game_code)
+        return "/game-bot/" + game_code
+    else:
+        return False
 
 
 def check_is_digit(num):
