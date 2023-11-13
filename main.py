@@ -8,7 +8,7 @@ import PySimpleGUI as sg # pylint: disable=import-error
 
 sg.theme("DarkAmber")
 arr = ["", "", "", ""]
-CREDITS = "produce by norouzy 29/12/2021"
+CREDITS = "produce by norouzy - 29/12/2021 | updated by difhel - 2023"
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/96.0.4664.110 Safari/537.36"
