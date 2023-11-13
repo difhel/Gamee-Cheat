@@ -24,10 +24,3 @@ python main.py
  2- Insert a Score that you want
  
  3- Insert a logical time (in seconds) according to your score</b>
-
-
-# Credits
-
-[norouzy](https://github.com/norouzy), 2021
-
-[difhel](https://github.com/difhel), 2023
