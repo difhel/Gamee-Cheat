@@ -5,8 +5,6 @@ It's simple app written in Python to hack all [gamee](https://prizes.gamee.com/)
 <br><br><br>
 ![1](https://user-images.githubusercontent.com/77892796/180670744-d978f062-7bbb-4245-864d-42610d71ef46.png)
 
-I fixed the code in some places that caused the old version written by the author to stop working.
-
 
 # How To Run
 
